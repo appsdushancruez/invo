@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { use } from 'react'
 import supabase from '@/lib/supabase'
@@ -37,33 +37,16 @@ interface InvoiceItem {
   }
 }
 
-interface InvoiceItemResponse {
-  id: string
-  product_id: string
-  quantity: number
-  unit_price: number
-  po_number: string
-  total_price: number
-  product: {
-    name: string
-  }
-}
-
 export default function EditInvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [items, setItems] = useState<InvoiceItem[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  useEffect(() => {
-    fetchData()
-  }, [resolvedParams.id])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       // Fetch products
       const { data: productsData, error: productsError } = await supabase
@@ -107,7 +90,11 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
     } finally {
       setLoading(false)
     }
-  }
+  }, [resolvedParams.id]);
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -158,26 +145,26 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
     }
   }
 
-  const handleItemChange = (index: number, field: keyof InvoiceItem, value: any) => {
+  const handleItemChange = (index: number, field: keyof InvoiceItem, value: string | number) => {
     const newItems = [...items]
     if (field === 'product_id') {
       const product = products.find(p => p.id === value)
       newItems[index] = {
         ...newItems[index],
-        product_id: value,
+        product_id: value as string,
         unit_price: product?.selling_price || 0,
         total_price: (product?.selling_price || 0) * newItems[index].quantity,
         product: { name: product?.name || '' }
       }
     } else if (field === 'quantity') {
-      const quantity = typeof value === 'number' ? value : parseInt(value)
+      const quantity = typeof value === 'number' ? value : parseInt(value as string)
       newItems[index] = {
         ...newItems[index],
         quantity,
         total_price: newItems[index].unit_price * quantity
       }
     } else if (field === 'unit_price') {
-      const price = typeof value === 'number' ? value : parseFloat(value)
+      const price = typeof value === 'number' ? value : parseFloat(value as string)
       newItems[index] = {
         ...newItems[index],
         unit_price: price,

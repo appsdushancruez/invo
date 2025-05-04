@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { use } from 'react'
 import supabase from '@/lib/supabase'
@@ -48,11 +48,7 @@ export default function ViewInvoicePage({ params }: { params: Promise<{ id: stri
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  useEffect(() => {
-    fetchInvoice()
-  }, [resolvedParams.id])
-
-  const fetchInvoice = async () => {
+  const fetchInvoice = useCallback(async () => {
     try {
       // Fetch invoice details
       const { data: invoiceData, error: invoiceError } = await supabase
@@ -87,7 +83,11 @@ export default function ViewInvoicePage({ params }: { params: Promise<{ id: stri
     } finally {
       setLoading(false)
     }
-  }
+  }, [resolvedParams.id])
+
+  useEffect(() => {
+    fetchInvoice()
+  }, [fetchInvoice])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString()

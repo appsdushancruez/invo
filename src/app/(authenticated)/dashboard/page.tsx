@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { formatCurrency } from '@/lib/utils'
@@ -24,11 +24,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const supabase = createClientComponentClient()
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       // Fetch total invoices and amount
       const { data: invoicesData, error: invoicesError } = await supabase
@@ -65,7 +61,11 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchStats()
+  }, [fetchStats])
 
   if (loading) {
     return (

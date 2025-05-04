@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '@/lib/supabase'
 import { formatCurrency } from '@/lib/utils'
-import LoadingSpinner from '@/components/LoadingSpinner'
 import LoadingOverlay from '@/components/LoadingOverlay'
 
 interface Product {

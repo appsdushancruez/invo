@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
     marginBottom: 5
   },
   table: {
+    // @ts-expect-error - 'table' is supported by @react-pdf/renderer but not typed correctly
     display: 'table',
     width: 'auto',
     marginTop: 20,

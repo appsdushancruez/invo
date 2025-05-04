@@ -1,13 +1,32 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import supabase from '@/lib/supabase'
+
+interface SessionData {
+  user: string | null | undefined;
+  expires_at: string;
+}
+
+interface DebugInfo {
+  'Session Data': SessionData | string;
+  'Auth Error': string;
+  'Cookies Present': string[] | string;
+  'Window Location': string;
+  'User Agent': string;
+  [key: string]: unknown;
+}
 
 export default function TestEnvPage() {
   const [envVars, setEnvVars] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
-  const [debugInfo, setDebugInfo] = useState<Record<string, any>>({})
+  const [debugInfo, setDebugInfo] = useState<DebugInfo>({
+    'Session Data': 'Loading...',
+    'Auth Error': 'None',
+    'Cookies Present': 'Loading...',
+    'Window Location': '',
+    'User Agent': '',
+  })
 
   useEffect(() => {
     const checkEnv = async () => {
@@ -29,7 +48,7 @@ export default function TestEnvPage() {
         }
 
         // Debug information
-        const debug = {
+        const debug: DebugInfo = {
           'Session Data': data.session ? {
             user: data.session.user.email,
             expires_at: new Date(data.session.expires_at! * 1000).toLocaleString(),
@@ -86,7 +105,7 @@ export default function TestEnvPage() {
                       {key}
                     </dt>
                     <dd className="mt-1 text-sm text-gray-900">
-                      {typeof value === 'object' ? JSON.stringify(value, null, 2) : value}
+                      {typeof value === 'object' && value !== null ? JSON.stringify(value, null, 2) : String(value)}
                     </dd>
                   </div>
                 ))}
